@@ -49,8 +49,8 @@ const Dashboard = () => {
       color: "!bg-gradient-to-r from-pink-400 via-rose-500 to-red-500",
     },
     {
-      title: "Beddings",
-      count: items.filter((item) => item.category === "beddings").length,
+      title: "Shoes",
+      count: items.filter((item) => item.category === "shoes").length,
       icon: <HomeOutlined className="text-3xl text-white" />,
       color: "!bg-gradient-to-r from-purple-400 via-fuchsia-500 to-pink-600",
     },
