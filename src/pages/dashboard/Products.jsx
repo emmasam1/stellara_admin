@@ -218,7 +218,7 @@ const Products = () => {
               <Select placeholder="Select a category">
                 <Option value="perfumes">Perfumes</Option>
                 <Option value="bags">Bags</Option>
-                <Option value="beddings">Beddings</Option>
+                <Option value="shoes">Shoes</Option>
               </Select>
             </Form.Item>
           </div>
