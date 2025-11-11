@@ -20,7 +20,7 @@ const Login = () => {
 
       // Always destructure from res.data
       const { token } = res.data;
-      console.log(res)
+      // console.log(res)
 
       // Save token + user to context (sessionStorage is auto-handled)
       setToken(token);
