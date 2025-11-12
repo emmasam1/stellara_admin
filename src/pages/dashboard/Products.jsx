@@ -279,7 +279,10 @@ const Products = () => {
               <Input placeholder="e.g. 2347063062524" />
             </Form.Item>
 
-            <Form.Item label="Instagram Link" name={["socialMedia", "instagram"]}>
+            <Form.Item
+              label="Instagram Link"
+              name={["socialMedia", "instagram"]}
+            >
               <Input placeholder="https://instagram.com/username" />
             </Form.Item>
 
@@ -292,7 +295,10 @@ const Products = () => {
               valuePropName="fileList"
               getValueFromEvent={(e) => e?.fileList}
               rules={[
-                { required: !editingProduct, message: "Please upload product image" },
+                {
+                  required: !editingProduct,
+                  message: "Please upload product image",
+                },
               ]}
             >
               <Upload
@@ -348,7 +354,7 @@ const Products = () => {
               <Card
                 key={product._id}
                 hoverable
-                className="w-full"
+                className="w-full relative"
                 cover={
                   <img
                     alt={product.name}
@@ -357,7 +363,14 @@ const Products = () => {
                   />
                 }
               >
-                <h1 className="font-bold text-sm md:text-base">{product.name}</h1>
+                {/* View count badge */}
+                <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  👁️ <span>{product.views || 0}</span>
+                </div>
+
+                <h1 className="font-bold text-sm md:text-base">
+                  {product.name}
+                </h1>
                 <p className="text-sm md:text-base flex justify-between items-center">
                   {product.oldPrice && product.oldPrice !== product.price && (
                     <span className="line-through text-gray-400 mr-2">
