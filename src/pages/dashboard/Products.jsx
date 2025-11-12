@@ -358,7 +358,7 @@ const Products = () => {
                 }
               >
                 <h1 className="font-bold text-sm md:text-base">{product.name}</h1>
-                <p className="text-sm md:text-base">
+                <p className="text-sm md:text-base flex justify-between items-center">
                   {product.oldPrice && product.oldPrice !== product.price && (
                     <span className="line-through text-gray-400 mr-2">
                       ₦{product.oldPrice}
