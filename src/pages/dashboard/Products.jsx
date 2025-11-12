@@ -10,12 +10,22 @@ import {
   Popconfirm,
   Image,
   Upload,
+  Pagination,
 } from "antd";
-import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import { useApp } from "../../context/AppContext";
 import Loader from "../../components/Loader";
-import { RiWhatsappFill, RiInstagramFill, RiFacebookFill } from "react-icons/ri";
+import {
+  RiWhatsappFill,
+  RiInstagramFill,
+  RiFacebookFill,
+} from "react-icons/ri";
 
 const { Option } = Select;
 
@@ -39,12 +49,20 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // items per page
+
   const getProducts = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/api/products`);
-      setProducts(res.data);
-      console.log(res)
+      // Sort so newest comes first
+      const sorted = res.data.sort(
+        (a, b) =>
+          new Date(b.createdAt || b._id) - new Date(a.createdAt || a._id)
+      );
+      setProducts(sorted);
     } catch (error) {
       console.log(error);
     } finally {
@@ -130,21 +148,32 @@ const Products = () => {
 
       let res;
       if (editingProduct) {
-        res = await axios.put(`${BASE_URL}/api/products/${editingProduct._id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
-        });
+        res = await axios.put(
+          `${BASE_URL}/api/products/${editingProduct._id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       } else {
         res = await axios.post(`${BASE_URL}/api/products`, formData, {
-          headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         });
       }
 
-      console.log(res)
       messageApi.success(res.data.message || "Product saved!");
       handleCancel();
       getProducts();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || "Failed to save product.");
+      messageApi.error(
+        error.response?.data?.message || "Failed to save product."
+      );
     } finally {
       setLoading(false);
     }
@@ -158,7 +187,9 @@ const Products = () => {
       messageApi.success("Product deleted successfully!");
       getProducts();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || "Failed to delete product.");
+      messageApi.error(
+        error.response?.data?.message || "Failed to delete product."
+      );
     }
   };
 
@@ -169,16 +200,24 @@ const Products = () => {
     </div>
   );
 
+  // Paginate products
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedProducts = products.slice(startIndex, startIndex + pageSize);
+
   return (
     <div className="p-4">
       {contextHolder}
 
       <div className="flex justify-end mb-4">
-        <Button onClick={() => showModal()} className="!bg-[#CDA434] !text-white !border-0">
+        <Button
+          onClick={() => showModal()}
+          className="!bg-[#CDA434] !text-white !border-0"
+        >
           Add Product
         </Button>
       </div>
 
+      {/* Modal Form */}
       <Modal
         title={editingProduct ? "Edit Product" : "Add Product"}
         open={isModalOpen}
@@ -188,7 +227,12 @@ const Products = () => {
         width="90%"
         style={{ maxWidth: 600 }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-3">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="space-y-3"
+        >
           <Form.Item
             label="Product Name"
             name="name"
@@ -247,7 +291,9 @@ const Products = () => {
               label="Product Image"
               valuePropName="fileList"
               getValueFromEvent={(e) => e?.fileList}
-              rules={[{ required: !editingProduct, message: "Please upload product image" }]}
+              rules={[
+                { required: !editingProduct, message: "Please upload product image" },
+              ]}
             >
               <Upload
                 listType="picture-card"
@@ -290,60 +336,98 @@ const Products = () => {
         </Form>
       </Modal>
 
+      {/* Products Grid */}
       {loading ? (
         <div className="flex justify-center items-center h-96">
           <Loader />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
-          {products.map((product) => (
-            <Card
-              key={product._id}
-              hoverable
-              className="w-full"
-              cover={<img alt={product.name} src={product.image} className="h-48 w-full object-cover" />}
-            >
-              <h1 className="font-bold text-sm md:text-base">{product.name}</h1>
-              <p className="text-sm md:text-base">
-                {product.oldPrice && product.oldPrice !== product.price && (
-                  <span className="line-through text-gray-400 mr-2">₦{product.oldPrice}</span>
-                )}
-                <span>₦{product.price}</span>
-              </p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
+            {paginatedProducts.map((product) => (
+              <Card
+                key={product._id}
+                hoverable
+                className="w-full"
+                cover={
+                  <img
+                    alt={product.name}
+                    src={product.image}
+                    className="h-48 w-full object-cover"
+                  />
+                }
+              >
+                <h1 className="font-bold text-sm md:text-base">{product.name}</h1>
+                <p className="text-sm md:text-base">
+                  {product.oldPrice && product.oldPrice !== product.price && (
+                    <span className="line-through text-gray-400 mr-2">
+                      ₦{product.oldPrice}
+                    </span>
+                  )}
+                  <span>₦{product.price}</span>
+                </p>
 
-              <div className="flex gap-2 mt-2 text-lg md:text-xl">
-                {product.socialMedia?.whatsapp && (
-                  <a href={`https://wa.me/${product.socialMedia.whatsapp}`} target="_blank" rel="noopener noreferrer">
-                    <RiWhatsappFill className="text-green-500" />
-                  </a>
-                )}
-                {product.socialMedia?.instagram && (
-                  <a href={product.socialMedia.instagram} target="_blank" rel="noopener noreferrer">
-                    <RiInstagramFill className="text-pink-500" />
-                  </a>
-                )}
-                {product.socialMedia?.facebook && (
-                  <a href={product.socialMedia.facebook} target="_blank" rel="noopener noreferrer">
-                    <RiFacebookFill className="text-blue-600" />
-                  </a>
-                )}
-              </div>
+                <div className="flex gap-2 mt-2 text-lg md:text-xl">
+                  {product.socialMedia?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${product.socialMedia.whatsapp}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <RiWhatsappFill className="text-green-500" />
+                    </a>
+                  )}
+                  {product.socialMedia?.instagram && (
+                    <a
+                      href={product.socialMedia.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <RiInstagramFill className="text-pink-500" />
+                    </a>
+                  )}
+                  {product.socialMedia?.facebook && (
+                    <a
+                      href={product.socialMedia.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <RiFacebookFill className="text-blue-600" />
+                    </a>
+                  )}
+                </div>
 
-              <div className="flex justify-between items-center mt-3">
-                <Button icon={<EditOutlined />} size="small" onClick={() => showModal(product)} />
-                <Popconfirm
-                  title="Are you sure to delete this product?"
-                  okText="Yes"
-                  okType="danger"
-                  cancelText="No"
-                  onConfirm={() => deleteProduct(product._id)}
-                >
-                  <Button icon={<DeleteOutlined />} size="small" danger />
-                </Popconfirm>
-              </div>
-            </Card>
-          ))}
-        </div>
+                <div className="flex justify-between items-center mt-3">
+                  <Button
+                    icon={<EditOutlined />}
+                    size="small"
+                    onClick={() => showModal(product)}
+                  />
+                  <Popconfirm
+                    title="Are you sure to delete this product?"
+                    okText="Yes"
+                    okType="danger"
+                    cancelText="No"
+                    onConfirm={() => deleteProduct(product._id)}
+                  >
+                    <Button icon={<DeleteOutlined />} size="small" danger />
+                  </Popconfirm>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={products.length}
+              onChange={setCurrentPage}
+              showSizeChanger={false}
+            />
+          </div>
+        </>
       )}
     </div>
   );

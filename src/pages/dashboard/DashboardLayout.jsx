@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Layout, Menu } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { FiPieChart, FiBox } from "react-icons/fi";
@@ -18,8 +18,23 @@ export default function DashboardLayout() {
 
   const items = [
     { key: "/dashboard", icon: <FiPieChart />, label: "Dashboard" },
-    { key: "/dashboard/products",  icon: <FiBox />,      label: "Products"  },
+    { key: "/dashboard/products", icon: <FiBox />, label: "Products" },
   ];
+
+  // ✅ Auto collapse on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 992) {
+        setCollapsed(true);
+      } else {
+        setCollapsed(false);
+      }
+    };
+
+    handleResize(); // run once on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -36,6 +51,8 @@ export default function DashboardLayout() {
           bottom: 0,
           background: "#202020",
           overflow: "auto",
+          transition: "all 0.3s ease",
+          zIndex: 1000,
         }}
       >
         {/* Logo */}
@@ -66,7 +83,7 @@ export default function DashboardLayout() {
         />
       </Sider>
 
-      {/* Fixed Header (aligned to the right of the Sider) */}
+      {/* Fixed Header */}
       <Header
         style={{
           position: "fixed",
@@ -79,11 +96,11 @@ export default function DashboardLayout() {
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
-          zIndex: 100,
+          zIndex: 1100,
           transition: "left .2s ease",
         }}
       >
-        {/* Collapse trigger in same dark color */}
+        {/* Collapse Trigger */}
         <div
           onClick={() => setCollapsed((c) => !c)}
           style={{
@@ -101,13 +118,13 @@ export default function DashboardLayout() {
         <div style={{ marginLeft: 12, fontWeight: 600 }}>Stellara Admin</div>
       </Header>
 
-      {/* Content offset by Sider + Header */}
+      {/* Content */}
       <Content
         style={{
           marginLeft: siderWidth,
           padding: "16px",
-          paddingTop: headerHeight + 24, // keep content below fixed header
-          transition: "margin-left .2s ease, padding-left .2s ease",
+          paddingTop: headerHeight + 24,
+          transition: "margin-left .2s ease",
           minHeight: "100vh",
           background: "#f5f5f5",
         }}
